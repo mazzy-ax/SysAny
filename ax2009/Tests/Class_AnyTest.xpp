@@ -1,0 +1,175 @@
+﻿class AnyTest extends SysTestCase
+{
+
+    void testConpeek()
+    {
+        container con = [1, '', 31\01\2019, ['inside'], 2019-01-31T13:00:00];
+        Any any;
+    ;
+
+        any = Any::conpeek(con, 1);
+        this.assertEquals(conpeek(con,1), any.value());
+
+        any = Any::conpeek(con, 2);
+        this.assertEquals(conpeek(con, 2), any.value());
+
+        any = Any::conpeek(con, 3);
+        this.assertEquals(conpeek(con, 3), any.value());
+
+        any = Any::conpeek(con, 4);
+        this.assertEquals(conpeek(con, 4), any.value());
+
+        any = Any::conpeek(con, 5);
+        this.assertEquals(conpeek(con, 5), any.value());
+    }
+
+    void testConstruct()
+    {
+        //TODO проверить все типы
+        int i = 1;
+        str s = 'test';
+        Voucher v = 'voucher';
+        Any any;
+    ;
+
+        any = Any::constuct(i);
+        this.assertEquals(i, any.value());
+
+        any = Any::constuct(s);
+        this.assertEquals(s, any.value());
+
+        any = Any::constuct(v);
+        this.assertEquals(v, any.value());
+    }
+
+    void testEqualsTo()
+    {
+        //TODO проверить все типы
+        int i = 1;
+        str s = 'test';
+        Voucher v = 'voucher';
+        Date d = systemdateget();
+        utcdatetime dt = DateTimeUtil::utcNow();
+        container c = [1, '', d];
+
+        Any any1 = Any::constuct(i);
+        Any any2;
+    ;
+
+        any2 = Any::constuct(i);
+        this.assertTrue(any1.equalsTo(any2));
+        this.assertTrue(any2.equalsTo(any1));
+
+        this.assertFalse(any1.equalsTo(null));
+        this.assertFalse(any2.equalsTo(null));
+
+        any2 = Any::constuct(s);
+        this.assertFalse(any1.equalsTo(any2));
+        this.assertFalse(any2.equalsTo(any1));
+
+        any2 = Any::constuct(v);
+        this.assertFalse(any1.equalsTo(any2));
+        this.assertFalse(any2.equalsTo(any1));
+
+        any2 = Any::constuct(d);
+        this.assertFalse(any1.equalsTo(any2));
+        this.assertFalse(any2.equalsTo(any1));
+
+        any2 = Any::constuct(dt);
+        this.assertFalse(any1.equalsTo(any2));
+        this.assertFalse(any2.equalsTo(any1));
+
+        any2 = Any::constuct(c);
+        this.assertFalse(any1.equalsTo(any2));
+        this.assertFalse(any2.equalsTo(any1));
+    }
+
+    void testField()
+    {
+        UserInfo userInfo;
+        Any any;
+    ;
+
+        select firstOnly userInfo;
+
+        any = Any::field(userInfo, fieldnum(Userinfo, RecId));
+        this.assertEquals(userInfo.RecId, any.value());
+
+        any = Any::field(userInfo, fieldnum(Userinfo, dataAreaId));
+        this.assertEquals(userInfo.dataAreaId, any.value());
+
+        any = Any::field(userInfo, fieldnum(Userinfo, createdDateTime));
+        this.assertEquals(userInfo.createdDateTime, any.value());
+    }
+
+    void testIsEqual()
+    {
+        //TODO проверить все типы
+        int i = 1;
+        str s = 'test';
+        Voucher v = 'voucher';
+        Date d = systemdateget();
+        utcdatetime dt = DateTimeUtil::utcNow();
+        container c = [1, '', d];
+
+        Any any1 = Any::constuct(i);
+        Any any2;
+    ;
+
+        any2 = Any::constuct(i);
+        this.assertTrue(Any::isEqual(any1, any2));
+        this.assertTrue(Any::isEqual(any2, any1));
+
+        this.assertTrue(Any::isEqual(null, null));
+        this.assertFalse(Any::isEqual(any1, null));
+        this.assertFalse(Any::isEqual(null, any2));
+
+        any2 = Any::constuct(s);
+        this.assertFalse(Any::isEqual(any1, any2));
+        this.assertFalse(Any::isEqual(any2, any1));
+
+        any2 = Any::constuct(v);
+        this.assertFalse(Any::isEqual(any1, any2));
+        this.assertFalse(Any::isEqual(any2, any1));
+
+        any2 = Any::constuct(d);
+        this.assertFalse(Any::isEqual(any1, any2));
+        this.assertFalse(Any::isEqual(any2, any1));
+
+        any2 = Any::constuct(dt);
+        this.assertFalse(Any::isEqual(any1, any2));
+        this.assertFalse(Any::isEqual(any2, any1));
+
+        any2 = Any::constuct(c);
+        this.assertFalse(Any::isEqual(any1, any2));
+        this.assertFalse(Any::isEqual(any2, any1));
+    }
+
+    void testToString()
+    {
+        //TODO проверить все типы
+        Any any;
+    ;
+
+        any = Any::constuct(1);
+        this.assertEquals('1', any.toString());
+
+        any = Any::constuct('test');
+        this.assertEquals('test', any.toString());
+
+        any = Any::constuct(31\12\2019);
+        this.assertEquals(strfmt('%1',31\12\2019), any.toString());
+
+        any = Any::constuct(2019-12-31T13:01:00);
+        this.assertEquals(strfmt('%1',2019-12-31T13:01:00), any.toString());
+
+        any = Any::constuct([1, '', [31\12\2019]]);
+        this.assertEquals('[1,,[31.12.2019]]', any.toString());
+
+        any = Any::constuct(appl);
+        this.assertEquals('Class', any.toString());
+
+        any = Any::constuct(SysUserInfo::find());
+        this.assertEquals('Record', any.toString());
+    }
+}

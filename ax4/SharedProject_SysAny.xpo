@@ -1,0 +1,706 @@
+﻿Exportfile for AOT version 1.0 or later
+Formatversion: 1
+
+***Element: CLS
+
+; Microsoft Dynamics Class: Any unloaded
+; --------------------------------------------------------------------------------
+  CLSVERSION 1
+  
+  CLASS #Any
+    PROPERTIES
+      Name                #Any
+      Extends             #
+      RunOn               #Called from
+    ENDPROPERTIES
+    
+    METHODS
+      Version: 3
+      SOURCE #addToTextBuffer
+        #// рекурсивно заполняет textBuffer
+        #protected textBuffer addToTextBuffer(  str          _sep            = ',',
+        #                                       boolean      _queryValue     = false,
+        #                                       TextBuffer   _textBuffer     = null)
+        #{
+        #    Types   type    = typeof(value);
+        #    int     i;
+        #    int     len;
+        #    str     s;
+        #;
+        #
+        #    if (_textBuffer == null)
+        #    {
+        #        _textBuffer = new TextBuffer();
+        #    }
+        #
+        #    switch(type)
+        #    {
+        #        case Types::Container:
+        #            if (!_queryValue)
+        #            {
+        #                _textBuffer.appendText('[');
+        #            }
+        #
+        #            len = conlen(value);
+        #            for(i=1; i<=len; ++i)
+        #            {
+        #                if(i>1)
+        #                {
+        #                    _textBuffer.appendText(_sep);
+        #                }
+        #                _textBuffer = Any::conpeek(value, i).addToTextBuffer(_sep, _queryValue, _textBuffer);
+        #            }
+        #
+        #            if (!_queryValue)
+        #            {
+        #                _textBuffer.appendText(']');
+        #            }
+        #            break;
+        #
+        #        case Types::Class:
+        #        case Types::Record:
+        #        case Types::AnyType:
+        #        case Types::BLOB:
+        #        case Types::void:
+        #            throw error(Error::wrongUseOfFunction(funcname()));
+        #
+        #        default:
+        #            s = _queryValue ? SysQuery::value(value) : strfmt('%1', value);
+        #            _textBuffer.appendText(s);
+        #            break;
+        #    }
+        #
+        #    return _textBuffer;
+        #}
+      ENDSOURCE
+      SOURCE #asClass
+        #public Object asClass()
+        #{
+        #    return this.ensureType(Types::Class).value();
+        #}
+      ENDSOURCE
+      SOURCE #asContainer
+        #public container asContainer()
+        #{
+        #    return this.ensureType(Types::Container).value();
+        #}
+      ENDSOURCE
+      SOURCE #asDate
+        #public Date asDate()
+        #{
+        #    return this.ensureType(Types::Date).value();
+        #}
+      ENDSOURCE
+      SOURCE #asEnum
+        #public anytype asEnum()
+        #{
+        #    return this.ensureType(Types::Enum).value();
+        #}
+      ENDSOURCE
+      SOURCE #asGUID
+        #public GUID asGUID()
+        #{
+        #    return this.ensureType(Types::Guid).value();
+        #}
+      ENDSOURCE
+      SOURCE #asInt
+        #public int asInt()
+        #{
+        #    return this.ensureTypes([Types::Integer, Types::Enum, Types::DateTime]).value();
+        #}
+      ENDSOURCE
+      SOURCE #asInt64
+        #public int64 asInt64()
+        #{
+        #    return this.ensureTypes([Types::Int64, Types::Integer, Types::Enum, Types::DateTime]).value();
+        #}
+      ENDSOURCE
+      SOURCE #asObject
+        #public Object asObject()
+        #{
+        #    return this.ensureType(Types::Class).value();
+        #}
+      ENDSOURCE
+      SOURCE #asReal
+        #public Real asReal()
+        #{
+        #    return this.ensureType(Types::Real).value();
+        #}
+      ENDSOURCE
+      SOURCE #asRecord
+        #public Common asRecord()
+        #{
+        #    return this.ensureType(Types::Record).value();
+        #}
+      ENDSOURCE
+      SOURCE #asString
+        #public str asString()
+        #{
+        #    return this.ensureTypes([Types::String, Types::RString, Types::VarString]).value();
+        #}
+      ENDSOURCE
+      SOURCE #asTime
+        #public timeOfDay asTime()
+        #{
+        #    return this.ensureType(Types::DateTime).value();
+        #}
+      ENDSOURCE
+      SOURCE #checkNotEmpty
+        #// если значение пустое, то выводит ошибку и возвращает false
+        #// если значение непустое, то возвращает true
+        #//
+        #// нормально работает с контейнерами, классами, CLR и прочими сложными объектами. В отличие от global::checkFilling()
+        #public boolean checkNotEmpty(str _valueLabel, str _txt = 'Значение не должно быть пустым. Укажите значение для %1.')
+        #{
+        #    boolean ret = true;
+        #;
+        #    if (!value)
+        #    {
+        #        ret = CheckFailed(strfmt(_txt, _valueLabel));
+        #    }
+        #
+        #    return ret;
+        #}
+      ENDSOURCE
+      SOURCE #checkType
+        #public boolean checkType(Types _type)
+        #{
+        #    boolean ret = (this.type() == _type);
+        #
+        #    return ret;
+        #}
+      ENDSOURCE
+      SOURCE #checkTypeId
+        #public boolean checkTypeId(ExtendedTypeId  _typeId)
+        #{
+        #    Types       type    = extendedTypeId2Type(_typeId);
+        #    boolean     ret     = this.checkType(type);
+        #
+        #    return ret;
+        #}
+      ENDSOURCE
+      SOURCE #checkTypes
+        #public boolean checkTypes(container _typeCon)
+        #{
+        #    boolean ret = (confind(_typeCon, this.type()) != 0);
+        #
+        #    return ret;
+        #}
+      ENDSOURCE
+      SOURCE #classDeclaration
+        #//
+        #// mazzy, https://github.com/mazzy-ax/SysAny
+        #//
+        #// класс содержит неизменяемое значение любого типа
+        #// чтобы переприсвоить значение создайте новый объект этого типа
+        #//
+        #// Чем отличается этот класс от Anytype и от SysAnyType?
+        #// 1.
+        #// Аксапта позволяет установить произвольное значение в переменную типа anytype только один раз.
+        #// Во время первой инициализации тип переменной фиксируется, в дальнейшем тип изменить нельзя.
+        #//
+        #// Anytype var = 1;
+        #// var = 2;         // ok
+        #// var = '';        // результат не определен. В большинстве версий аксапты будет 0;
+        #//
+        #// 2.
+        #// Чтобы обойти эту проблему в Аксапту ввели тип SysAnyType
+        #// SysAnyType позволяет в любой момент установить действительно любое значение.
+        #// Но ради этого тип сделали очень тяжелым - в куче хранится map, key и сам объект в качестве value
+        #// кроме того, каждое обращение к value - это lookup внутри map
+        #//
+        #// SysAnyType var = new SysAnyType(1);
+        #// var.value('');   // будет хранить пустую строку
+        #//
+        #// 3.
+        #// Данный класс Any не позволяет изменять значение хранимого объекта.
+        #// Поэтому данный класс может просто хранить ref на объект произвольного типа
+        #// Но! переприсвоить значение можно просто пересоздав объект Any
+        #//
+        #// Any var = new Any(1);        // ok
+        #// var = new Any('');           // ok
+        #//
+        #// у Any есть несколько специализированных конструкторов и обычный construct
+        #//
+        #// Any var = Any::constuct(1);  // ok
+        #// var = Any::constuct('');     // ok
+        #//
+        #// Класс проявляется в цикле (обратите внимание на специализированный конструктор conpeek)
+        #//
+        #// container con = [1, '', 31\01\2019];
+        #// Any var;
+        #// for(i=1; i<=conlen(con); ++i)
+        #// {
+        #//     var = Any::conpeek(con, i);
+        #// }
+        #class Any
+        #{
+        #    Anytype value;
+        #}
+      ENDSOURCE
+      SOURCE #ensureType
+        #public Any ensureType(Types _type)
+        #{
+        #    if( this.checkType(_type) )
+        #        return this;
+        #
+        #    throw error(Error::wrongUseOfFunction(funcname()));
+        #}
+      ENDSOURCE
+      SOURCE #ensureTypeId
+        #public Any ensureTypeId(ExtendedTypeId  _typeId)
+        #{
+        #    if( this.checkTypeId(_typeID) )
+        #        return this;
+        #
+        #    throw error(Error::wrongUseOfFunction(funcname()));
+        #}
+      ENDSOURCE
+      SOURCE #ensureTypes
+        #public Any ensureTypes(container _typeCon)
+        #{
+        #    if( this.checkTypes(_typeCon) )
+        #        return this;
+        #
+        #    throw error(Error::wrongUseOfFunction(funcname()));
+        #}
+      ENDSOURCE
+      SOURCE #equalsTo
+        #// за основу взят SysAnyType::isEqual()
+        #public boolean equalsTo(Any _type2)
+        #{
+        #    //Is one of them null ?
+        #    if (!_type2)
+        #    {
+        #        return false;
+        #    }
+        #
+        #    //Are their types different ?
+        #    if (this.type() != _type2.type())
+        #    {
+        #        return false;
+        #    }
+        #
+        #    //They are the same type. Is this type void ?
+        #    if (this.type() == Types::void)
+        #    {
+        #        return true;
+        #    }
+        #
+        #    //Are their values different ?
+        #    if (this.value() != _type2.value())
+        #    {
+        #        return false;
+        #    }
+        #
+        #    return true;
+        #}
+      ENDSOURCE
+      SOURCE #new
+        #void new(Anytype _value = null)
+        #{
+        #    value = _value;
+        #}
+      ENDSOURCE
+      SOURCE #queryValue
+        #public str queryValue()
+        #{
+        #    Types       type    = typeof(value);
+        #    str         ret;
+        #
+        #    switch (type)
+        #    {
+        #        case Types::Container:
+        #            ret = this.addToTextBuffer(',', true).getText();
+        #            break;
+        #
+        #        case Types::Class:
+        #        case Types::Record:
+        #        case Types::AnyType:
+        #        case Types::BLOB:
+        #        case Types::void:
+        #            throw error(Error::wrongUseOfFunction(funcname()));
+        #
+        #        default:
+        #            ret = SysQuery::value(value);
+        #            break;
+        #    }
+        #
+        #    return ret;
+        #}
+      ENDSOURCE
+      SOURCE #toString
+        #public str toString(str _sep = ',')
+        #{
+        #    // поскольку этот метод может вызваться в отладчике еще до инициализации,
+        #    // то в этом методе нельзя использовать методы класса и нельзя бросать исключение
+        #    // и ни в коем случае не бросаем исключение на неинициализированные значения
+        #    Types       type    = typeof(value);
+        #    str         ret;
+        #;
+        #
+        #    switch (type)
+        #    {
+        #        case Types::String:
+        #        case Types::RString:
+        #            ret = value;
+        #            break;
+        #
+        #        case Types::Container:
+        #            ret = this.addToTextBuffer(_sep).getText();
+        #            break;
+        #
+        #        case Types::AnyType:
+        #            ret = '';
+        #            break;
+        #
+        #        case Types::Record:
+        #        case Types::Class:
+        #        case Types::BLOB:
+        #        case Types::void:
+        #            ret = strfmt('%1', type); // не бросаем исключение! throw error(Error::unsupportedEnum(funcname(), type));
+        #            break;
+        #
+        #        default:
+        #            ret = strfmt('%1', value);
+        #            break;
+        #    }
+        #
+        #    return ret;
+        #}
+      ENDSOURCE
+      SOURCE #type
+        #public Types type()
+        #{
+        #    Types type = typeof(value);
+        #
+        #    return type;
+        #}
+      ENDSOURCE
+      SOURCE #value
+        #// только чтение! см. комментарий к classDeclaration
+        #public AnyType value()
+        #{
+        #    return value;
+        #}
+      ENDSOURCE
+      SOURCE #checkAllNotEmpty
+        #// принимает данные в контейнере, который состоит из контейнеров - значение и метка
+        #// выдает ошибки для всех пустых значений
+        #// если хотя бы одно значение пустое, то возвращает false
+        #// если все значения не пустые, то возвращает true
+        #//
+        #// пример использования:
+        #//     Any::checkAllNotEmpty([[purchId, 'Закупка'], [emplId, 'Ответственный']]);
+        #//
+        #public static boolean checkAllNotEmpty(container _pairs, str _txt = 'Значение не должно быть пустым. Укажите значение для %1.')
+        #{
+        #    boolean     ret = true;
+        #
+        #    container   pair;
+        #    str         label;
+        #
+        #    int         i;
+        #    int         len = conlen(_pairs);
+        #    ;
+        #
+        #    for (i=1; i<=len; ++i)
+        #    {
+        #        // следующие две строки кода могут выбросить исключение,
+        #        // если программист положил в контейнер данные неправильного формата
+        #        // не делаем дополнительных проверок, а просто даем Аксапте выругаться
+        #        pair  = Any::conpeek(_pairs, i).asContainer();
+        #        label = conpeek(pair, 2);
+        #
+        #        // здесь возможно появление ошибок, если значение пусто
+        #        ret   = Any::conpeek(pair, 1).checkNotEmpty(label, _txt) && ret;
+        #    }
+        #
+        #    return ret;
+        #}
+      ENDSOURCE
+      SOURCE #conpeek
+        #public static Any conpeek(container _con, int _idx)
+        #{
+        #    anytype value   = conpeek(_con, _idx);  // не делаем дополнительных проверок: к случае чего, аксапта выбросит исключение про контейнеры
+        #    Any     ret     = Any::constuct(value);
+        #;
+        #
+        #    return ret;
+        #}
+      ENDSOURCE
+      SOURCE #constuct
+        #public static Any constuct(Anytype _value)
+        #{
+        #    Any any = new Any(_value);
+        #
+        #    return any;
+        #}
+      ENDSOURCE
+      SOURCE #field
+        #public static Any field(Common _record, fieldId _fieldid)
+        #{
+        #    anytype value   = _record.(_fieldid);  // не делаем дополнительных проверок: к случае чего, аксапта выбросит исключение про поля в записи
+        #    Any     ret     = Any::constuct(value);
+        #
+        #    return ret;
+        #}
+      ENDSOURCE
+      SOURCE #isEqual
+        #// за основу взят SysAnyType::isEqual()
+        #static public boolean isEqual(Any _type1, Any _type2)
+        #{
+        #    //Are both null ?
+        #    if (!_type1 && !_type2)
+        #    {
+        #        return true;
+        #    }
+        #
+        #    //Is one of them null ?
+        #    if (!_type1 || !_type2)
+        #    {
+        #        return false;
+        #    }
+        #
+        #    //Are their types different ?
+        #    if (_type1.type() != _type2.type())
+        #    {
+        #        return false;
+        #    }
+        #
+        #    //They are the same type. Is this type void ?
+        #    if (_type1.type() == Types::void)
+        #    {
+        #        return true;
+        #    }
+        #
+        #    //Are their values different ?
+        #    if (_type1.value() != _type2.value())
+        #    {
+        #        return false;
+        #    }
+        #
+        #    return true;
+        #}
+      ENDSOURCE
+    ENDMETHODS
+  ENDCLASS
+
+***Element: CLS
+
+; Microsoft Dynamics Class: AnyTest unloaded
+; --------------------------------------------------------------------------------
+  CLSVERSION 1
+  
+  CLASS #AnyTest
+    PROPERTIES
+      Name                #AnyTest
+      Extends             #SysTestCase
+      RunOn               #Called from
+    ENDPROPERTIES
+    
+    METHODS
+      Version: 3
+      SOURCE #classDeclaration
+        #class AnyTest extends SysTestCase
+        #{
+        #}
+      ENDSOURCE
+      SOURCE #testConpeek
+        #void testConpeek()
+        #{
+        #    container con = [1, '', 31\01\2019, ['inside'], 13*60*60];
+        #    Any any;
+        #;
+        #
+        #    any = Any::conpeek(con, 1);
+        #    this.assertEquals(conpeek(con,1), any.value());
+        #
+        #    any = Any::conpeek(con, 2);
+        #    this.assertEquals(conpeek(con, 2), any.value());
+        #
+        #    any = Any::conpeek(con, 3);
+        #    this.assertEquals(conpeek(con, 3), any.value());
+        #
+        #    any = Any::conpeek(con, 4);
+        #    this.assertEquals(conpeek(con, 4), any.value());
+        #
+        #    any = Any::conpeek(con, 5);
+        #    this.assertEquals(conpeek(con, 5), any.value());
+        #}
+      ENDSOURCE
+      SOURCE #testConstruct
+        #void testConstruct()
+        #{
+        #    //TODO проверить все типы
+        #    int i = 1;
+        #    str s = 'test';
+        #    Voucher v = 'voucher';
+        #    Any any;
+        #;
+        #
+        #    any = Any::constuct(i);
+        #    this.assertEquals(i, any.value());
+        #
+        #    any = Any::constuct(s);
+        #    this.assertEquals(s, any.value());
+        #
+        #    any = Any::constuct(v);
+        #    this.assertEquals(v, any.value());
+        #}
+      ENDSOURCE
+      SOURCE #testEqualsTo
+        #void testEqualsTo()
+        #{
+        #    //TODO проверить все типы
+        #    int i = 1;
+        #    str s = 'test';
+        #    Voucher v = 'voucher';
+        #    Date d = systemdateget();
+        #    container c = [1, '', d];
+        #
+        #    Any any1 = Any::constuct(i);
+        #    Any any2;
+        #;
+        #
+        #    any2 = Any::constuct(i);
+        #    this.assertTrue(any1.equalsTo(any2));
+        #    this.assertTrue(any2.equalsTo(any1));
+        #
+        #    this.assertFalse(any1.equalsTo(null));
+        #    this.assertFalse(any2.equalsTo(null));
+        #
+        #    any2 = Any::constuct(s);
+        #    this.assertFalse(any1.equalsTo(any2));
+        #    this.assertFalse(any2.equalsTo(any1));
+        #
+        #    any2 = Any::constuct(v);
+        #    this.assertFalse(any1.equalsTo(any2));
+        #    this.assertFalse(any2.equalsTo(any1));
+        #
+        #    any2 = Any::constuct(d);
+        #    this.assertFalse(any1.equalsTo(any2));
+        #    this.assertFalse(any2.equalsTo(any1));
+        #
+        #    any2 = Any::constuct(c);
+        #    this.assertFalse(any1.equalsTo(any2));
+        #    this.assertFalse(any2.equalsTo(any1));
+        #}
+      ENDSOURCE
+      SOURCE #testField
+        #void testField()
+        #{
+        #    UserInfo userInfo;
+        #    Any any;
+        #;
+        #
+        #    select firstOnly userInfo;
+        #
+        #    any = Any::field(userInfo, fieldnum(Userinfo, RecId));
+        #    this.assertEquals(userInfo.RecId, any.value());
+        #
+        #    any = Any::field(userInfo, fieldnum(Userinfo, dataAreaId));
+        #    this.assertEquals(userInfo.dataAreaId, any.value());
+        #
+        #    any = Any::field(userInfo, fieldnum(Userinfo, createdDate));
+        #    this.assertEquals(userInfo.createdDate, any.value());
+        #}
+      ENDSOURCE
+      SOURCE #testIsEqual
+        #void testIsEqual()
+        #{
+        #    //TODO проверить все типы
+        #    int i = 1;
+        #    str s = 'test';
+        #    Voucher v = 'voucher';
+        #    Date d = systemdateget();
+        #    container c = [1, '', d];
+        #
+        #    Any any1 = Any::constuct(i);
+        #    Any any2;
+        #;
+        #
+        #    any2 = Any::constuct(i);
+        #    this.assertTrue(Any::isEqual(any1, any2));
+        #    this.assertTrue(Any::isEqual(any2, any1));
+        #
+        #    this.assertTrue(Any::isEqual(null, null));
+        #    this.assertFalse(Any::isEqual(any1, null));
+        #    this.assertFalse(Any::isEqual(null, any2));
+        #
+        #    any2 = Any::constuct(s);
+        #    this.assertFalse(Any::isEqual(any1, any2));
+        #    this.assertFalse(Any::isEqual(any2, any1));
+        #
+        #    any2 = Any::constuct(v);
+        #    this.assertFalse(Any::isEqual(any1, any2));
+        #    this.assertFalse(Any::isEqual(any2, any1));
+        #
+        #    any2 = Any::constuct(d);
+        #    this.assertFalse(Any::isEqual(any1, any2));
+        #    this.assertFalse(Any::isEqual(any2, any1));
+        #
+        #    any2 = Any::constuct(c);
+        #    this.assertFalse(Any::isEqual(any1, any2));
+        #    this.assertFalse(Any::isEqual(any2, any1));
+        #}
+      ENDSOURCE
+      SOURCE #testToString
+        #void testToString()
+        #{
+        #    //TODO проверить все типы
+        #    Any any;
+        #;
+        #
+        #    any = Any::constuct(1);
+        #    this.assertEquals('1', any.toString());
+        #
+        #    any = Any::constuct('test');
+        #    this.assertEquals('test', any.toString());
+        #
+        #    any = Any::constuct(31\12\2019);
+        #    this.assertEquals(strfmt('%1',31\12\2019), any.toString());
+        #
+        #    any = Any::constuct([1, '', [31\12\2019]]);
+        #    this.assertEquals('[1,,[31.12.2019]]', any.toString());
+        #
+        #    any = Any::constuct(appl);
+        #    this.assertEquals('Class', any.toString());
+        #
+        #    any = Any::constuct(SysUserInfo::find());
+        #    this.assertEquals('Record', any.toString());
+        #}
+      ENDSOURCE
+    ENDMETHODS
+  ENDCLASS
+
+***Element: PRN
+
+; Microsoft Dynamics Project : SysAny unloaded
+; --------------------------------------------------------------------------------
+  PROJECTVERSION 2
+  
+  PROJECT #SysAny
+   SHARED
+  PROPERTIES
+    Name                #SysAny
+  ENDPROPERTIES
+  
+    BEGINNODE
+      FILETYPE 0
+      UTILTYPE 45
+      UTILOBJECTID 50002
+      NODETYPE 329
+      NAME #Any
+    ENDNODE
+    BEGINNODE
+      FILETYPE 0
+      UTILTYPE 45
+      UTILOBJECTID 50003
+      NODETYPE 329
+      NAME #AnyTest
+    ENDNODE
+  ENDPROJECT
+  
+
+***Element: END
